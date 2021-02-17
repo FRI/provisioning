@@ -1,0 +1,75 @@
+version: "3"
+
+services:
+
+  postgres:
+    image: docker.io/library/postgres:13-alpine
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    restart: always
+    networks:
+      net:
+        ipv4_address: 172.0.0.3
+  
+  cachet:
+    image: docker.io/cachethq/docker:2.3.18
+    ports:
+      - 80:8000
+    links:
+      - postgres:postgres
+    environment:
+      - DB_DRIVER=pgsql
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PREFIX=${DB_PREFIX}
+      - APP_KEY=${APP_KEY:-null}
+      - APP_LOG=errorlog
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=false
+      - DEBUG=false
+      - MAIL_DRIVER=${MAIL_DRIVER}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_ADDRESS=${MAIL_ADDRESS}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
+    depends_on:
+      - postgres
+    restart: on-failure
+    networks:
+      net:
+        ipv4_address: 172.0.0.2
+
+  monitor:
+    image: docker.io/mtakaki/cachet-url-monitor:0.6.10
+    environment:
+      - CACHET_API=172.0.0.2:8000/api/v1
+      - CACHET_DEV=false
+      - CACHET_TOKEN=${CACHET_TOKEN}
+    volumes:
+      - monitor-config.yml:/usr/src/app/config/config.yml:ro
+    depends_on:
+      - cachet
+    restart: on-failure
+    networks:
+      net:
+        ipv4_address: 172.0.0.4
+
+volumes:
+  db:
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.0.0.0/24
