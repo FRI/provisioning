@@ -4,7 +4,7 @@ endpoints:
   - name: Urnik
     url: https://urnik.fri.uni-lj.si
     method: GET
-    timeout: 1s
+    timeout: 1
     expectation:
       - type: HTTP_STATUS
         status_range: 200-205
@@ -18,45 +18,64 @@ endpoints:
       - PUSH_METRICS
     public_incidents: true
     latency_unit: ms
-    frequency: 60
+    frequency: 5
+
+  - name: Učilnica
+    url: https://ucilnica.fri.uni-lj.si
+    method: GET
+    timeout: 1
+    expectation:
+      - type: HTTP_STATUS
+        status_range: 200-205
+      - type: LATENCY
+        threshold: 0.3
+    allowed_fails: 1
+    component_id: 2
+    metric_id: 2
+    action:
+      - UPDATE_STATUS
+      - PUSH_METRICS
+    public_incidents: true
+    latency_unit: ms
+    frequency: 5
 
   - name: STUDIS
     url: https://studij.fri.uni-lj.si
     method: GET
-    timeout: 1s
+    timeout: 1
     expectation:
       - type: HTTP_STATUS
         status_range: 200-205
       - type: LATENCY
         threshold: 0.3
     allowed_fails: 1
-    component_id: 1
-    metric_id: 1
+    component_id: 3
+    metric_id: 3
     action:
       - UPDATE_STATUS
       - PUSH_METRICS
     public_incidents: true
     latency_unit: ms
-    frequency: 60
+    frequency: 5
 
-  - name: STUDIS
-    url: https://studij.fri.uni-lj.si
+  - name: Failed
+    url: https://studij1.fri.uni-lj.si
     method: GET
-    timeout: 1s
+    timeout: 1
     expectation:
       - type: HTTP_STATUS
         status_range: 200-205
       - type: LATENCY
         threshold: 0.3
     allowed_fails: 1
-    component_id: 1
-    metric_id: 1
+    component_id: 4
+    metric_id: 4
     action:
       - UPDATE_STATUS
       - PUSH_METRICS
     public_incidents: true
     latency_unit: ms
-    frequency: 60
+    frequency: 5
 
 cachet:
   api_url:
@@ -66,5 +85,6 @@ cachet:
     - type: ENVIRONMENT_VARIABLE
       value: CACHET_TOKEN
   messages:
-    incident_outage: "{name} is DOWN"
-    incident_operational: "{name} is UP"
+    incident_outage: "{name} ni več dosegljiv"
+    incident_operational: "{name} deluje pravilno"
+    incident_performance: "{name} ima poslabšano učinkovitost"

@@ -1,8 +1,6 @@
-version: "3"
-
 services:
 
-  postgres:
+  db:
     image: docker.io/library/postgres:13-alpine
     volumes:
       - db:/var/lib/postgresql/data
@@ -13,14 +11,12 @@ services:
     restart: always
     networks:
       net:
-        ipv4_address: 172.0.0.3
+        ipv4_address: 192.168.5.3
   
   cachet:
-    image: docker.io/cachethq/docker:2.3.18
+    image: docker.io/cachethq/docker:2.3.15
     ports:
       - 80:8000
-    links:
-      - postgres:postgres
     environment:
       - DB_DRIVER=pgsql
       - DB_HOST=${DB_HOST}
@@ -32,6 +28,7 @@ services:
       - APP_KEY=${APP_KEY:-null}
       - APP_LOG=errorlog
       - APP_ENV=${APP_ENV:-production}
+      - APP_URL=192.168.0.2:8000
       - APP_DEBUG=false
       - DEBUG=false
       - MAIL_DRIVER=${MAIL_DRIVER}
@@ -42,26 +39,26 @@ services:
       - MAIL_ADDRESS=${MAIL_ADDRESS}
       - MAIL_ENCRYPTION=${MAIL_ENCRYPTION}
     depends_on:
-      - postgres
+      - db
     restart: on-failure
     networks:
       net:
-        ipv4_address: 172.0.0.2
+        ipv4_address: 192.168.5.2
 
   monitor:
-    image: docker.io/mtakaki/cachet-url-monitor:0.6.10
+    image: docker.io/mtakaki/cachet-url-monitor:latest
     environment:
-      - CACHET_API=172.0.0.2:8000/api/v1
+      - CACHET_API=192.168.5.2:8000/api/v1
       - CACHET_DEV=false
       - CACHET_TOKEN=${CACHET_TOKEN}
     volumes:
-      - monitor-config.yml:/usr/src/app/config/config.yml:ro
+      - ./monitor-config.yml:/usr/src/app/config/config.yml:ro
     depends_on:
       - cachet
     restart: on-failure
     networks:
       net:
-        ipv4_address: 172.0.0.4
+        ipv4_address: 192.168.5.4
 
 volumes:
   db:
@@ -72,4 +69,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.0.0.0/24
+        - subnet: 192.168.5.0/24
