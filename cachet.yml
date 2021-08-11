@@ -1,0 +1,25 @@
+---
+- hosts: all
+  tasks:
+  # TODO: Parse output to use the API key as a variable in subsequent tasks
+  - name: Store Cachet's API key
+    community.docker.docker_compose:
+      project_src: cachet
+      services:
+        - cachet
+    register: output
+
+  - name: Start Cachet
+    community.docker.docker_compose:
+      project_src: cachet
+      services:
+        - cachet
+    register: cachet-log
+
+  - name: Start URL monitor
+    community.docker.docker_compose:
+      project_src: cachet
+      services:
+        - monitor
+    register: monitor-log
+
